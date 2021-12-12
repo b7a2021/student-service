@@ -1,13 +1,14 @@
 package telran.b7a.student.dao;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import telran.b7a.student.model.Student;
 
-@Component
+@Repository
 public class StudentRepositoryImpl implements StudentRepository {
 	
 	Map<Integer, Student> students = new ConcurrentHashMap<>();
@@ -19,8 +20,8 @@ public class StudentRepositoryImpl implements StudentRepository {
 	}
 
 	@Override
-	public Student findById(int id) {
-		return students.get(id);
+	public Optional<Student> findById(int id) {
+		return Optional.ofNullable(students.get(id));
 	}
 
 	@Override
