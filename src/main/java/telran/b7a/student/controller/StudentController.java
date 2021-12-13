@@ -20,8 +20,12 @@ import telran.b7a.student.service.StudentService;
 @RestController
 public class StudentController {
 
-	@Autowired
 	StudentService studentService;
+
+	@Autowired
+	public StudentController(StudentService studentService) {
+		this.studentService = studentService;
+	}
 
 	@PostMapping("/student")
 	public boolean studentRegister(@RequestBody StudentCredentialsDto studentCredentialsDto) {
@@ -47,7 +51,7 @@ public class StudentController {
 	public boolean addScore(@PathVariable Integer id, @RequestBody ScoreDto scoreDto) {
 		return studentService.addScore(id, scoreDto);
 	}
-	
+
 	@GetMapping("/students/name/{name}")
 	public List<StudentDto> findStudentsByName(@PathVariable String name) {
 		return studentService.findStudentsByName(name);

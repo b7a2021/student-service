@@ -7,7 +7,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import telran.b7a.student.dao.StudentRepository;
+import telran.b7a.student.dao.StudentMongoRepository;
 import telran.b7a.student.dto.ScoreDto;
 import telran.b7a.student.dto.StudentCredentialsDto;
 import telran.b7a.student.dto.StudentDto;
@@ -17,12 +17,15 @@ import telran.b7a.student.model.Student;
 
 @Service
 public class StudentServiceImpl implements StudentService {
-	
-	@Autowired
-	StudentRepository studentRepository;
-	
-	@Autowired
+
+	StudentMongoRepository studentRepository;
 	ModelMapper modelMapper;
+
+	@Autowired
+	public StudentServiceImpl(StudentMongoRepository studentRepository, ModelMapper modelMapper) {
+		this.studentRepository = studentRepository;
+		this.modelMapper = modelMapper;
+	}
 
 	@Override
 	public boolean addStudent(StudentCredentialsDto studentCredentialsDto) {
@@ -38,23 +41,20 @@ public class StudentServiceImpl implements StudentService {
 
 	@Override
 	public StudentDto findStudent(Integer id) {
-		Student student = studentRepository.findById(id)
-				.orElseThrow(() -> new StudentNotFoundException(id));
+		Student student = studentRepository.findById(id).orElseThrow(() -> new StudentNotFoundException(id));
 		return modelMapper.map(student, StudentDto.class);
 	}
 
 	@Override
 	public StudentDto deleteStudent(Integer id) {
-		Student student = studentRepository.findById(id)
-				.orElseThrow(() -> new StudentNotFoundException(id));
+		Student student = studentRepository.findById(id).orElseThrow(() -> new StudentNotFoundException(id));
 		studentRepository.deleteById(id);
 		return modelMapper.map(student, StudentDto.class);
 	}
 
 	@Override
 	public StudentCredentialsDto updateStudent(Integer id, UpdateStudentDto updateStudentDto) {
-		Student student = studentRepository.findById(id)
-				.orElseThrow(() -> new StudentNotFoundException(id));
+		Student student = studentRepository.findById(id).orElseThrow(() -> new StudentNotFoundException(id));
 		student.setName(updateStudentDto.getName());
 		student.setPassword(updateStudentDto.getPassword());
 		return modelMapper.map(student, StudentCredentialsDto.class);
@@ -62,17 +62,16 @@ public class StudentServiceImpl implements StudentService {
 
 	@Override
 	public boolean addScore(Integer id, ScoreDto scoreDto) {
-		Student student = studentRepository.findById(id)
-				.orElseThrow(() -> new StudentNotFoundException(id));
-		return student.addScore(scoreDto.getExamName(), scoreDto.getScore());
+		Student student = studentRepository.findById(id).orElseThrow(() -> new StudentNotFoundException(id));
+		boolean res = student.addScore(scoreDto.getExamName(), scoreDto.getScore());
+		studentRepository.save(student);
+		return res;
 	}
 
 	@Override
 	public List<StudentDto> findStudentsByName(String name) {
-		return studentRepository.findAll().stream()
-									.filter(s -> name.equalsIgnoreCase(s.getName()))
-									.map(s -> modelMapper.map(s, StudentDto.class))
-									.collect(Collectors.toList());
+		return studentRepository.findAll().stream().filter(s -> name.equalsIgnoreCase(s.getName()))
+				.map(s -> modelMapper.map(s, StudentDto.class)).collect(Collectors.toList());
 	}
 
 }
